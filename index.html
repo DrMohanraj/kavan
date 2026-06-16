@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>கவண் - தமிழ் வினாடி வினா</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    margin:0;
+    font-family:'Noto Sans Tamil',sans-serif;
+    background:linear-gradient(#87CEEB,#d8f3ff);
+    text-align:center;
+    overflow-x:hidden;
+}
+
+header{
+    padding:20px;
+    color:#fff;
+    background:#6B4226;
+    font-size:32px;
+    font-weight:bold;
+}
+
+.hero{
+    padding:20px;
+}
+
+.mountains{
+    font-size:40px;
+}
+
+.scoreboard{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    margin:10px;
+    font-weight:bold;
+}
+
+.card{
+    background:white;
+    width:90%;
+    max-width:600px;
+    margin:auto;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.option{
+    display:block;
+    width:100%;
+    margin:10px 0;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#f1f1f1;
+    cursor:pointer;
+    font-size:18px;
+}
+
+.option:hover{
+    background:#dff0ff;
+}
+
+.scene{
+    margin-top:20px;
+    height:140px;
+    position:relative;
+}
+
+.player{
+    position:absolute;
+    left:20%;
+    bottom:0;
+    font-size:50px;
+}
+
+.target{
+    position:absolute;
+    right:20%;
+    top:10px;
+    font-size:60px;
+}
+
+.stone{
+    position:absolute;
+    left:28%;
+    bottom:35px;
+    font-size:28px;
+    transition:all 1s ease;
+}
+
+.hit{
+    animation:shake .4s;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0)}
+    25%{transform:translateX(-5px)}
+    50%{transform:translateX(5px)}
+    75%{transform:translateX(-5px)}
+    100%{transform:translateX(0)}
+}
+
+.message{
+    margin-top:15px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+#startBtn,#nextBtn{
+    margin-top:15px;
+    padding:12px 25px;
+    border:none;
+    border-radius:10px;
+    background:#FFC107;
+    font-size:18px;
+    cursor:pointer;
+}
+</style>
+
+</head>
+<body>
+
+<header>கவண்</header>
+
+<div class="hero">
+    <div class="mountains">🏔️🏔️🏔️</div>
+    <h3>குறி பார்த்து எறி... அறிவால் வெற்றி பெறு!</h3>
+</div>
+
+<div class="scoreboard">
+    <div>🍯 தேன்: <span id="honey">0</span></div>
+    <div>🏆 புகழ்: <span id="score">0</span></div>
+</div>
+
+<div class="card">
+
+<div id="startScreen">
+    <h2>மலைமக்களின் கவண் விளையாட்டு</h2>
+    <p>சரியான பதிலைத் தேர்வு செய்து குறியை வீழ்த்துங்கள்.</p>
+    <button id="startBtn">விளையாடு</button>
+</div>
+
+<div id="gameScreen" style="display:none">
+
+```
+<h2 id="question"></h2>
+
+<div id="options"></div>
+
+<div class="scene">
+    <div class="player">🧑🏾</div>
+    <div class="stone" id="stone">🪨</div>
+    <div class="target" id="target">🐝</div>
+</div>
+
+<div class="message" id="message"></div>
+
+<button id="nextBtn" style="display:none">அடுத்த கேள்வி</button>
+```
+
+</div>
+
+</div>
+
+<script>
+
+const questions = [
+
+{
+question:"தமிழின் முதல் இலக்கண நூல் எது?",
+options:["சிலப்பதிகாரம்","மணிமேகலை","தொல்காப்பியம்","குறுந்தொகை"],
+answer:2
+},
+
+{
+question:"சிலப்பதிகாரத்தை இயற்றியவர் யார்?",
+options:["இளங்கோ அடிகள்","கபிலர்","அவ்வையார்","நக்கீரர்"],
+answer:0
+},
+
+{
+question:"தமிழ்நாட்டின் மாநில விலங்கு எது?",
+options:["யானை","வரையாடு","சிங்கம்","மான்"],
+answer:1
+},
+
+{
+question:"திருக்குறளை இயற்றியவர்?",
+options:["கம்பர்","வள்ளுவர்","பாரதி","அவ்வையார்"],
+answer:1
+},
+
+{
+question:"தேனீ எதை உற்பத்தி செய்கிறது?",
+options:["பால்","தேன்","நெய்","மோர்"],
+answer:1
+}
+
+];
+
+let current=0;
+let score=0;
+let honey=0;
+
+const questionEl=document.getElementById("question");
+const optionsEl=document.getElementById("options");
+const messageEl=document.getElementById("message");
+const stone=document.getElementById("stone");
+const target=document.getElementById("target");
+
+document.getElementById("startBtn").onclick=()=>{
+document.getElementById("startScreen").style.display="none";
+document.getElementById("gameScreen").style.display="block";
+loadQuestion();
+};
+
+function loadQuestion(){
+
+messageEl.innerHTML="";
+document.getElementById("nextBtn").style.display="none";
+
+stone.style.left="28%";
+stone.style.bottom="35px";
+
+const q=questions[current];
+
+questionEl.innerHTML=`${current+1}. ${q.question}`;
+
+optionsEl.innerHTML="";
+
+q.options.forEach((opt,index)=>{
+const btn=document.createElement("button");
+btn.className="option";
+btn.innerText=opt;
+btn.onclick=()=>checkAnswer(index);
+optionsEl.appendChild(btn);
+});
+
+}
+
+function checkAnswer(index){
+
+const q=questions[current];
+
+document.querySelectorAll(".option").forEach(btn=>{
+btn.disabled=true;
+});
+
+if(index===q.answer){
+
+stone.style.left="72%";
+stone.style.bottom="80px";
+
+setTimeout(()=>{
+target.classList.add("hit");
+},700);
+
+setTimeout(()=>{
+target.innerHTML="💥";
+score+=10;
+honey+=5;
+
+document.getElementById("score").innerText=score;
+document.getElementById("honey").innerText=honey;
+
+messageEl.innerHTML="🎯 சரியான பதில்! +10 புகழ் +5 தேன்";
+
+document.getElementById("nextBtn").style.display="inline-block";
+
+setTimeout(()=>{
+target.innerHTML="🐝";
+target.classList.remove("hit");
+},1000);
+
+},1000);
+
+}else{
+
+messageEl.innerHTML="❌ தவறான பதில்";
+
+document.getElementById("nextBtn").style.display="inline-block";
+}
+
+}
+
+document.getElementById("nextBtn").onclick=()=>{
+
+current++;
+
+if(current>=questions.length){
+
+document.getElementById("gameScreen").innerHTML=
+`
+<h2>🏆 விளையாட்டு முடிந்தது</h2>
+<h3>புகழ்: ${score}</h3>
+<h3>தேன்: ${honey}</h3>
+<p>மலைமகன் ஆக தொடருங்கள்!</p>
+`;
+
+return;
+}
+
+loadQuestion();
+
+};
+
+</script>
+
+</body>
+</html>
